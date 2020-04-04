@@ -72,6 +72,7 @@ def operator(e, x, y):
         yregister = y
         xregister = x
         return x
+
     elif e in 'Mod':
         decimalflag=False
         operatorstack.append(e)
@@ -88,6 +89,11 @@ def operator(e, x, y):
         operatorstack.append(e)
         operandstack.append(xregister)
         return 0
+    elif e in '+\-':
+        decimalflag=False
+        x = -1 * xregister
+        xregister = x
+        return x
     elif e in '/':
         decimalflag=False
         operatorstack.append(e)
@@ -166,30 +172,33 @@ def function(e, x, y):
     if e in 'SIN':
         xregister = round(math.sin(x1), precision)
         return xregister
-    if e in 'COS':
+    elif e in 'COS':
         xregister = round(math.cos(x1), precision)
         return xregister
-    if e in 'TAN':
+    elif e in 'TAN':
         xregister = round(math.tan(x1), precision)
         return xregister
-    if e in 'SQRT':
+    elif e in 'SQRT':
         if x1 < 0:
             return 'Error'
         xregister = round(math.sqrt(x1), precision)
         return xregister
-    if e in 'log':
+    elif e in 'log':
         # print('register =>', xregister)
         if x1 != 0:
             xregister = round(math.log10(x1), precision)
             return xregister
         else:
             return 0
-    if e in 'ln':
+    elif e in 'ln':
         if x1 != 0:
             xregister = round(math.log(x1), precision)
             return xregister
         else:
             return 0
+    elif e in 'x!':
+        xregister = round(math.factorial(x1), precision)
+        return xregister
 
 def constant(e):
     if e in 'e':
@@ -250,12 +259,12 @@ def main():
                         [CBtn(t) for t in ('xy', 'MS', 'M+', 'M-', 'MR')],
                         [CBtn(t) for t in ('Pi', 'e', 'Spare', 'log', 'ln')],
                         [CBtn(t) for t in ('SIN', 'COS', 'TAN', 'SQRT', 'REM')],
-                        [CBtn(t) for t in ('Prec', 'x', 'y', 'Del', 'Clr')],
+                        [CBtn(t) for t in ('Prec', 'x!', 'y', 'Del', 'Clr')],
                         [sg.Text('Message Area', size=(40, 1), key='_MESSAGEAREA_')],
                         [CBtn(t) for t in ('7', '8', '9', '*', '/')],
                         [CBtn(t) for t in ('4', '5', '6', '+', '-')],
                         [CBtn(t) for t in ('1', '2', '3', '%', 'x^y')],
-                        [CBtn(t) for t in ('0', '.', '+/-', '=', 'Mod')],
+                        [CBtn(t) for t in ('0', '.', '+\-', '=', 'Mod')],
                         [sg.Exit()]]
 
     # ########################################
@@ -270,6 +279,8 @@ def main():
 
     xdisplay = ''   # clear the input screen
     update_display(window, xdisplay)
+    xregister = 0
+    yregister = 0
 
     # event loop
     while True:  # Event Loop
@@ -285,9 +296,9 @@ def main():
                 # print('1. decimalflag =>', decimalflag)
                 if event == '.':
                     if not decimalflag:
-                        if len(xdisplay) == 0:
+                        # print('type xdisplay => ', type(xdisplay))
+                        if type(xdisplay) == 'str' and len(xdisplay) == 0:
                             xdisplay = str(xdisplay) + '0'
-
                         xdisplay = str(xdisplay) + event
                         decimalflag = True
                         # print('1.5  decimalflag =>', decimalflag)
@@ -297,13 +308,15 @@ def main():
                     # print('2. xdisplay =>', xdisplay)
                 xregister = float(xdisplay)
                 update_display(window,xdisplay)
+                xregister = float(xdisplay)
                 # print('xregister => ', xregister)
                 # print('yregister =>', yregister)
-            elif event in ['+', '-', '*', '/', '%', '=', '+/-', 'xy',  '', 'x^y', 'Mod']:
+            elif event in ['+', '-', '*', '/', '%', '=', '+\-', 'xy',  '', 'x^y', 'Mod']:
                 xdisplay = operator(event, xregister, yregister)
                 update_display(window, xdisplay)
+                xregister = float(xdisplay)
                 # print('4. xdisplay', xdisplay)
-            elif event in ['SIN', 'COS', 'TAN', 'SQRT', 'REM', 'log', 'ln']:
+            elif event in ['SIN', 'COS', 'TAN', 'SQRT', 'REM', 'log', 'ln', 'x!']:
                 if xdisplay == '':
                     xdisplay = 'Error enter a number'
                 else:
@@ -311,13 +324,16 @@ def main():
                     xregister = float(xdisplay)
                     xdisplay = function(event, xregister, yregister)
                     update_display(window,xdisplay)
+                    xregister = float(xdisplay)
             elif event in ['Pi', 'e']:
                 xdisplay = constant(event)
                 xregister = float(xdisplay)
                 update_display(window,xdisplay)
-            elif event in ['MS', 'M+', 'M-', 'MR', 'X/Y']:
+                xregister = float(xdisplay)
+            elif event in ['MS', 'M+', 'M-', 'MR']:
                 xdisplay = memory(event, xregister, yregister)
                 update_display(window,xdisplay)
+                xregister = float(xdisplay)
             elif event in ['Del', 'Clr']:
                 xdisplay = button(event, xdisplay)
                 update_display(window, xdisplay)
@@ -327,11 +343,14 @@ def main():
                 xdisplay = operator('x^y', xregister, yregister)
                 xdisplay = 0
                 update_display(window, xdisplay)
+                xregister = float(xdisplay)
             elif event in ['Prec']:
                 tmpstr = xdisplay
                 precision = int(tmpstr)
                 xdisplay = button('Clr', 0)
                 update_display(window, xdisplay)
+                xregister = float(xdisplay)
+
 
 
 if __name__=='__main__':
