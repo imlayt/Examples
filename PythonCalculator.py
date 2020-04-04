@@ -30,8 +30,8 @@ def button(e, x):
     global operatorstack
     global xregister
     global yregister
-
-    newx = ''
+    global decimalflag
+    global endtransflag
 
     if e in 'Clr':
         decimalflag = False
@@ -164,29 +164,29 @@ def function(e, x, y):
         x1 = float(x)
 
     if e in 'SIN':
-        xregister = math.sin(x1)
+        xregister = round(math.sin(x1), precision)
         return xregister
     if e in 'COS':
-        xregister = math.cos(x1)
+        xregister = round(math.cos(x1), precision)
         return xregister
     if e in 'TAN':
-        xregister = math.tan(x1)
+        xregister = round(math.tan(x1), precision)
         return xregister
     if e in 'SQRT':
         if x1 < 0:
             return 'Error'
-        xregister = math.sqrt(x1)
+        xregister = round(math.sqrt(x1), precision)
         return xregister
     if e in 'log':
         # print('register =>', xregister)
         if x1 != 0:
-            xregister = math.log10(x1)
+            xregister = round(math.log10(x1), precision)
             return xregister
         else:
             return 0
     if e in 'ln':
         if x1 != 0:
-            xregister = math.log(x1)
+            xregister = round(math.log(x1), precision)
             return xregister
         else:
             return 0
