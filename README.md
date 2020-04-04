@@ -15,7 +15,8 @@ Various Python examples - some are mine, some I'collected from git hub and elsew
   * MS, M+, M-, MR - work as you'd expect. There is only one memory register, but it is not cleared by the Clr button
   * xy - exchanges the xregister (the display register) for the yregister
   * x^y - raises the first number you enter to the power of the second you enter. You must click = in order to complete the transaction
-  * x, y, Spare, Rem, +/- - these buttons are not coded at this time
+  * x! - calculates the factorial of the number on the display
+  * y, Spare, Rem, +/- - these buttons are not coded at this time
   * % - As you'd expect, it multiplies the displayed number by 100
   * Message Area is for future use as a place to display error messages
   
