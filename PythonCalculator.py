@@ -1,32 +1,6 @@
-"""
-Written by  : Shreyas Daniel - github.com/shreydan
-Description : Uses Pythons eval() function
-              as a way to implement calculator.
-
-Functions available are:
---------------------------------------------
-                         + : addition
-                         - : subtraction
-                         * : multiplication
-                         / : division
-                         % : percentage
-                         e : 2.718281...
-                        pi : 3.141592...
-                      sine : sin(rad)
-                    cosine : cos(rad)
-                   exponent: x^y
-                   tangent : tan(rad)
-                 remainder : XmodY
-               square root : sqrt(n)
-  round to nearest integer : round(n)
-convert degrees to radians : rad(deg)
-absolute value             : aval(n)
-"""
-
 import PySimpleGUI as sg
 import sys
 import math
-# Imported math library to run sin(), cos(), tan() and other such functions in the calculator
 
 
 lightblue = '#b9def4'
@@ -37,90 +11,213 @@ lightaccent = '#b1b1b1'
 lighteraccent = '#fbe9b3'
 xregister = 0
 yregister = 0
-mem = 0
+mregister = 0
 xdisplay = ''
-
-def calc(term):
-    """
-        input: term of type str
-        output: returns the result of the computed term.
-        purpose: This function is the actual calculator and the heart of the application
-    """
-
-    # This part is for reading and converting arithmetic terms.
-    term = term.replace(' ', '')
-    term = term.replace('^', '**')
-    term = term.replace('=', '')
-    term = term.replace('?', '')
-    term = term.replace('%', '/100.00')
-    term = term.replace('rad', 'radians')
-    term = term.replace('mod', '%')
-    term = term.replace('aval', 'abs')
-
-    functions = ['sin', 'cos', 'tan', 'pow', 'cosh', 'sinh', 'tanh', 'sqrt', 'pi', 'radians', 'e']
-
-    # This part is for reading and converting function expressions.
-    term = term.lower()
-
-    for func in functions:
-        if func in term:
-            withmath = 'math.' + func
-            term = term.replace(func, withmath)
-
-    try:
-
-        # here goes the actual evaluating.
-        term = eval(term)
-
-    # here goes to the error cases.
-    except ZeroDivisionError:
-
-        print("Can't divide by 0.  Please try again.")
-
-    except NameError:
-
-        print('Invalid input.  Please try again')
-
-    except AttributeError:
-
-        print('Please check usage method and try again.')
-    except TypeError:
-        print("please enter inputs of correct datatype ")
-
-    return term
+operandstack = []
+operatorstack = []
+decimalflag = False
+endtransflag = False
+precision = 10
 
 
-def result(term):
-    """
-        input:  term of type str
-        output: none
-        purpose: passes the argument to the function calc(...) and
-                prints the result onto console.
-    """
-    print("\n" + str(calc(term)))
+def button(e, x):
+    global xdisplay
+    global operandstack
+    global operatorstack
+    global xregister
+    global yregister
 
+    newx = ''
+
+    if e in 'Clr':
+        decimalflag = False
+        endtransflag = False
+        operandstack = clrstack(operandstack)
+        operatorstack = clrstack(operatorstack)
+        xregister = 0
+        yregister = 0
+        return 0
+    if e in 'Del':
+
+        newx = str(x)
+        if newx in '0':
+            return 0
+
+        newx = newx[:-1]
+        print('newx => ', newx)
+        if len(newx) == 1:
+            return 0
+        else:
+            return newx
 
 def operator(e, x, y):
-    return e
+    global xregister
+    global yregister
+    global operatorstack
+    global operandstack
+    global decimalflag
+    global endtransflag
 
+    print('e, x, y', e, x, y)
+
+    if e in 'xy':
+        decimalflag=False
+        tmpvar = x
+        x = y
+        y = tmpvar
+        yregister = y
+        xregister = x
+        return x
+    elif e in 'Mod':
+        decimalflag=False
+        operatorstack.append(e)
+        operandstack.append(xregister)
+        # operandstack.append(yregister)
+        return 0
+    elif e in '+':
+        decimalflag=False
+        operatorstack.append(e)
+        operandstack.append(xregister)
+        return 0
+    elif e in '-':
+        decimalflag=False
+        operatorstack.append(e)
+        operandstack.append(xregister)
+        return 0
+    elif e in '/':
+        decimalflag=False
+        operatorstack.append(e)
+        operandstack.append(xregister)
+        print('operatorstack, operandstack', operatorstack, operandstack)
+        return 0
+    elif e in '*':
+        decimalflag=False
+        operatorstack.append(e)
+        operandstack.append(xregister)
+        return 0
+    elif e in '%':
+        decimalflag = False
+        x = xregister * 100
+        return x
+    elif e in 'x^y':
+        decimalflag=False
+        operatorstack.append(e)
+        operandstack.append(xregister)
+        return 0
+    elif e in '=':
+        decimalflag=False
+        endtransflag = True
+        operandstack.append(xregister)
+        print('operandstack', operandstack)
+        print('operatorstack', operatorstack)
+        x = calculate_result(operatorstack, operandstack)
+        return x
+
+def calculate_result(operators, operands):
+    op = ''
+    global xregister
+    global yregister
+    global precision
+
+    if len(operands) > 0:
+        xregister = operands.pop(-1)
+    else:
+        print('Pop Error: operands')
+
+    if len(operands) > 0:
+        yregister = operands.pop(-1)
+    else:
+        print('Pop Error: operands')
+
+    if len(operators) > 0:
+        op = operators.pop(-1)
+    else:
+        print('Pop Error: operators')
+
+    if op in ['x^y']:
+        answer = round(math.pow(yregister, xregister), precision)
+        return answer
+    elif op in 'Mod':
+        answer = round(math.fmod(xregister, yregister), precision)
+        print('answer =>', answer)
+        return answer
+    else:
+        expr = str(yregister) + op + str(xregister)
+        answer = eval(expr)
+        answer = round(answer, precision)
+
+    print('xregister, op, yregister',  xregister, op, yregister)
+    print('answer =>', answer)
+
+    return answer
 
 def function(e, x, y):
-    return e
+    global xregister
+    global yregister
 
+    if x == '':
+        return 'Error'
+    else:
+        x1 = float(x)
+
+    if e in 'SIN':
+        xregister = math.sin(x1)
+        return xregister
+    if e in 'COS':
+        xregister = math.cos(x1)
+        return xregister
+    if e in 'TAN':
+        xregister = math.tan(x1)
+        return xregister
+    if e in 'SQRT':
+        if x1 < 0:
+            return 'Error'
+        xregister = math.sqrt(x1)
+        return xregister
+    if e in 'log':
+        # print('register =>', xregister)
+        if x1 != 0:
+            xregister = math.log10(x1)
+            return xregister
+        else:
+            return 0
+    if e in 'ln':
+        if x1 != 0:
+            xregister = math.log(x1)
+            return xregister
+        else:
+            return 0
 
 def constant(e):
     if e in 'e':
-        return '2.718281'
+        return round(math.e, precision)
     else:
-        return '3.14159'
+        return round(math.pi, precision)
 
 
 def memory(e,x,y):
+    global mregister
+
+    if e in 'MS':
+        mregister = x
+        return mregister
+    if e in 'M+':
+        mregister += x
+        return mregister
+    if e in 'M-':
+        mregister -= x
+        return mregister
+    if e in 'MR':
+        return mregister
+
     return e
 
+def clrstack(thestack):
+    thestack = []
+    return thestack
 
 def CBtn(button_text):
-    return sg.Button(button_text, button_color=(darkaccent, lightaccent), size=(5, 1), font=("Helvetica", 20), key=button_text)
+    return sg.Button(button_text, button_color=(darkaccent, lightaccent), size=(5, 1), font=("Helvetica", 15), key=button_text)
 
 def update_display(window,displayvalue):
     window.FindElement('_DISPLAY_').Update(displayvalue)
@@ -136,18 +233,26 @@ def main():
         purpose: handles user input and prints
                  information to the console.
     """
+    global xregister
+    global yregister
+    global decimalflag
+    global endtransflag
+    global precision
+    global xdisplay
+
+    decimalflag = False
 
     # Define the mainscreen layout using the above layouts
-    mainscreenlayout = [[sg.Text('', size=(20, 1), key='_DISPLAY_',justification='right', font=("Helvetica", 30))],
-                        [CBtn(t) for t in ('x^y', 'MS', 'M+', 'M-', 'MR')],
+    mainscreenlayout = [[sg.Text('', size=(20, 1), key='_DISPLAY_',justification='right', font=("Helvetica", 20))],
+                        [CBtn(t) for t in ('xy', 'MS', 'M+', 'M-', 'MR')],
                         [CBtn(t) for t in ('Pi', 'e', 'RAD', 'log', 'ln')],
                         [CBtn(t) for t in ('SIN', 'COS', 'TAN', 'SQRT', 'REM')],
-                        [CBtn(t) for t in ('Py', 'x', 'y', 'Del', 'Clr')],
-                        [sg.Text('Message Area', size=(57, 1), key='_MESSAGEAREA_')],
+                        [CBtn(t) for t in ('Prec', 'x', 'y', 'Del', 'Clr')],
+                        [sg.Text('Message Area', size=(40, 1), key='_MESSAGEAREA_')],
                         [CBtn(t) for t in ('7', '8', '9', '*', '/')],
                         [CBtn(t) for t in ('4', '5', '6', '+', '-')],
-                        [CBtn(t) for t in ('1', '2', '3', '+', 'x/y')],
-                        [CBtn(t) for t in ('0', '.', '+/-', '=', '%')],
+                        [CBtn(t) for t in ('1', '2', '3', '%', 'x^y')],
+                        [CBtn(t) for t in ('0', '.', '+/-', '=', 'Mod')],
                         [sg.Exit()]]
 
     # ########################################
@@ -161,9 +266,8 @@ def main():
     # write_to_message_area(window, comic_name)
 
     xdisplay = ''   # clear the input screen
+    update_display(window, xdisplay)
 
-    # print("\nScientific Calculator\n\nFor Example: sin(rad(90)) + 50% * (sqrt(16)) + round(1.42^2)" +
-    #       "- 12mod3\n\nEnter quit to exit")
     # event loop
     while True:  # Event Loop
         event, values = window.Read()
@@ -172,22 +276,60 @@ def main():
         elif event is not '':
             # print(event)
             if event in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.']:
-                xdisplay = xdisplay + event
+                if endtransflag:
+                    xdisplay =''
+                    endtransflag = False
+                print('1. decimalflag =>', decimalflag)
+                if event == '.':
+                    if not decimalflag:
+                        if len(xdisplay) == 0:
+                            xdisplay = str(xdisplay) + '0'
+
+                        xdisplay = str(xdisplay) + event
+                        decimalflag = True
+                        # print('1.5  decimalflag =>', decimalflag)
+                else:
+                    # print('xdisplay, event', xdisplay, event)
+                    xdisplay = str(xdisplay) +event
+                    # print('2. xdisplay =>', xdisplay)
                 xregister = float(xdisplay)
                 update_display(window,xdisplay)
-                print('xregister => ', xregister)
-            elif event in ['+', '-', '*', '/', '%', '=', '+/-']:
+                # print('xregister => ', xregister)
+                # print('yregister =>', yregister)
+            elif event in ['+', '-', '*', '/', '%', '=', '+/-', 'xy',  '', 'x^y', 'Mod']:
                 xdisplay = operator(event, xregister, yregister)
-                update_display(window,xdisplay)
-            elif event in ['SIN', 'COS', 'TAN', 'SQRT', 'REM', 'RAD', 'LOG', 'Ln', 'X^Y']:
-                xdisplay = function(event, xregister, yregister)
-                update_display(window,xdisplay)
+                update_display(window, xdisplay)
+                # print('4. xdisplay', xdisplay)
+            elif event in ['SIN', 'COS', 'TAN', 'SQRT', 'REM', 'log', 'ln']:
+                if xdisplay == '':
+                    xdisplay = 'Error enter a number'
+                else:
+                    # print('e =>', event)
+                    xregister = float(xdisplay)
+                    xdisplay = function(event, xregister, yregister)
+                    update_display(window,xdisplay)
             elif event in ['Pi', 'e']:
                 xdisplay = constant(event)
+                xregister = float(xdisplay)
                 update_display(window,xdisplay)
             elif event in ['MS', 'M+', 'M-', 'MR', 'X/Y']:
                 xdisplay = memory(event, xregister, yregister)
                 update_display(window,xdisplay)
+            elif event in ['Del', 'Clr']:
+                xdisplay = button(event, xdisplay)
+                update_display(window, xdisplay)
+                xregister = float(xdisplay)
+            elif event in ['x^y']:
+                xregister = float(xdisplay)
+                xdisplay = operator('x^y', xregister, yregister)
+                xdisplay = 0
+                update_display(window, xdisplay)
+            elif event in ['Prec']:
+                tmpstr = xdisplay
+                precision = int(tmpstr)
+                xdisplay = button('Clr', 0)
+                update_display(window, xdisplay)
+
 
 if __name__=='__main__':
     main()
