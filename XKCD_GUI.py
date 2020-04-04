@@ -5,8 +5,7 @@ Description: Download latest XKCD Comic with this program.
 NOTE:
 	if this script is launched from the cloned repo, a new folder is created.
 	Please move the file to another directory to avoid messing with the folder structure.
-"""
-"""
+
 PySimpleGUI interface added by:Tom Imlay - github.com/imlayt
 Written on: 03/29/2020
 Description: downloads the latest XKCD comic then reads in the file to display it in a window

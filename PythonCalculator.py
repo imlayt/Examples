@@ -1,7 +1,11 @@
+#
+# A calculator built with Python 3 and PySimpleGUI
+# by Tom Imlay
+#
+
 import PySimpleGUI as sg
 import sys
 import math
-
 
 lightblue = '#b9def4'
 mediumblue = '#d2d2df'
@@ -44,7 +48,7 @@ def button(e, x):
             return 0
 
         newx = newx[:-1]
-        print('newx => ', newx)
+        # print('newx => ', newx)
         if len(newx) == 1:
             return 0
         else:
@@ -58,7 +62,7 @@ def operator(e, x, y):
     global decimalflag
     global endtransflag
 
-    print('e, x, y', e, x, y)
+    # print('e, x, y', e, x, y)
 
     if e in 'xy':
         decimalflag=False
@@ -88,7 +92,7 @@ def operator(e, x, y):
         decimalflag=False
         operatorstack.append(e)
         operandstack.append(xregister)
-        print('operatorstack, operandstack', operatorstack, operandstack)
+        # print('operatorstack, operandstack', operatorstack, operandstack)
         return 0
     elif e in '*':
         decimalflag=False
@@ -107,11 +111,14 @@ def operator(e, x, y):
     elif e in '=':
         decimalflag=False
         endtransflag = True
-        operandstack.append(xregister)
-        print('operandstack', operandstack)
-        print('operatorstack', operatorstack)
-        x = calculate_result(operatorstack, operandstack)
-        return x
+        if len(operatorstack) == 0:
+            return  0
+        else:
+            operandstack.append(xregister)
+            # print('operandstack', operandstack)
+            # print('operatorstack', operatorstack)
+            x = calculate_result(operatorstack, operandstack)
+            return x
 
 def calculate_result(operators, operands):
     op = ''
@@ -139,17 +146,13 @@ def calculate_result(operators, operands):
         return answer
     elif op in 'Mod':
         answer = round(math.fmod(xregister, yregister), precision)
-        print('answer =>', answer)
+        # print('answer =>', answer)
         return answer
     else:
         expr = str(yregister) + op + str(xregister)
         answer = eval(expr)
         answer = round(answer, precision)
-
-    print('xregister, op, yregister',  xregister, op, yregister)
-    print('answer =>', answer)
-
-    return answer
+        return answer
 
 def function(e, x, y):
     global xregister
@@ -245,7 +248,7 @@ def main():
     # Define the mainscreen layout using the above layouts
     mainscreenlayout = [[sg.Text('', size=(20, 1), key='_DISPLAY_',justification='right', font=("Helvetica", 20))],
                         [CBtn(t) for t in ('xy', 'MS', 'M+', 'M-', 'MR')],
-                        [CBtn(t) for t in ('Pi', 'e', 'RAD', 'log', 'ln')],
+                        [CBtn(t) for t in ('Pi', 'e', 'Spare', 'log', 'ln')],
                         [CBtn(t) for t in ('SIN', 'COS', 'TAN', 'SQRT', 'REM')],
                         [CBtn(t) for t in ('Prec', 'x', 'y', 'Del', 'Clr')],
                         [sg.Text('Message Area', size=(40, 1), key='_MESSAGEAREA_')],
@@ -279,7 +282,7 @@ def main():
                 if endtransflag:
                     xdisplay =''
                     endtransflag = False
-                print('1. decimalflag =>', decimalflag)
+                # print('1. decimalflag =>', decimalflag)
                 if event == '.':
                     if not decimalflag:
                         if len(xdisplay) == 0:
