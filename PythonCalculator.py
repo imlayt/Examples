@@ -119,6 +119,7 @@ def operator(e, x, y):
     elif e in '%':
         decimalflag = False
         x = xregister * 100
+        endtransflag = True
         return x
     elif e in 'x^y':
         decimalflag = False
@@ -363,7 +364,7 @@ def main():
             # print(event)
             if event in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.']:
                 if endtransflag:
-                    xdisplay = ''
+                    xdisplay = '0'
                     endtransflag = False
                 # print('1. decimalflag =>', decimalflag)
                 if event == '.':
@@ -378,6 +379,7 @@ def main():
                     # print('xdisplay, event', xdisplay, event)
                     xdisplay = str(xdisplay) + event
                     # print('2. xdisplay =>', xdisplay)
+                print('xdisplay =>', xdisplay)
                 xregister = float(xdisplay)
                 update_display(window, xdisplay)
                 xregister = float(xdisplay)
