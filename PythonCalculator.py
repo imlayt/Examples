@@ -90,7 +90,7 @@ def operator(e, x, y):
         operatorstack.append(e)
         operandstack.append(xregister)
         return 0
-    elif e in '+\-':
+    elif e in '+|-':
         decimalflag = False
         x = -1 * xregister
         xregister = x
@@ -151,17 +151,17 @@ def operator(e, x, y):
 
 def calculate_result(operators, operands):
     op = ''
-    global xregister
-    global yregister
+    # global xregister
+    # global yregister
     global precision
 
     if len(operands) > 0:
-        xregister = operands.pop(-1)
+        x = operands.pop(-1)
     else:
         print('Pop Error: operands')
 
     if len(operands) > 0:
-        yregister = operands.pop(-1)
+        y = operands.pop(-1)
     else:
         print('Pop Error: operands')
 
@@ -171,73 +171,81 @@ def calculate_result(operators, operands):
         print('Pop Error: operators')
 
     if op in ['x^y']:
-        answer = round(math.pow(yregister, xregister), precision)
+        answer = round(math.pow(y, x), precision)
         return answer
     elif op in 'Mod':
-        answer = round(math.fmod(xregister, yregister), precision)
+        answer = round(math.fmod(x, y), precision)
         # print('answer =>', answer)
         return answer
     elif op in 'nPr':
-        r = int(xregister)
-        n = int(yregister)
+        r = int(x)
+        n = int(y)
         answer = npr(n, r)
         return answer
     elif op in 'nCr':
-        r = int(xregister)
-        n = int(yregister)
+        r = int(x)
+        n = int(y)
         answer = ncr(n, r)
         return answer
     else:
-        expr = str(yregister) + op + str(xregister)
+        expr = str(y) + op + str(x)
         answer = eval(expr)
         answer = round(answer, precision)
         return answer
 
 
 def function(w, e, x):
-    global xregister
     global endtransflag
 
     if x == '':
-        return 'Error'
+        write_to_message_area(w, "ERROR: input us blank")
+        return -999999999
     else:
         x1 = float(x)
-
     if e in 'SIN':
-        xregister = round(math.sin(x1), precision)
-        return xregister
+        xreg = round(math.sin(x1), precision)
+        endtransflag = True
+        return xreg
     elif e in 'COS':
-        xregister = round(math.cos(x1), precision)
-        return xregister
+        xreg = round(math.cos(x1), precision)
+        endtransflag = True
+        return xreg
     elif e in 'TAN':
-        xregister = round(math.tan(x1), precision)
-        return xregister
+        xreg = round(math.tan(x1), precision)
+        endtransflag = True
+        return xreg
     elif e in 'SQRT':
         if x1 < 0:
-            return 'Error'
-        xregister = round(math.sqrt(x1), precision)
-        return xregister
-    elif e in 'log':
-        # print('register =>', xregister)
-        if x1 != 0:
-            xregister = round(math.log10(x1), precision)
-            return xregister
-        else:
-            return 0
-    elif e in 'ln':
-        if x1 != 0:
-            xregister = round(math.log(x1), precision)
-            return xregister
-        else:
-            write_to_message_area(w, "ERROR")
-            return -0
-    elif e in 'n!':
-        xregister = round(math.factorial(x1), precision)
+            write_to_message_area(w, "ERROR: positive numbers only")
+            return -999999999
+        xreg = round(math.sqrt(x1), precision)
         endtransflag = True
-        return xregister
+        return xreg
+    elif e in 'log':
+        # print('register =>', xreg)
+        if x1 > 0:
+            xreg = round(math.log10(x1), precision)
+            endtransflag = True
+            return xreg
+        else:
+            write_to_message_area(w, "ERROR: positive numbers only")
+            return -999999999
+    elif e in 'ln':
+        if x1 > 0:
+            xreg = round(math.log(x1), precision)
+            endtransflag = True
+            return xreg
+        else:
+            write_to_message_area(w, "ERROR: positive numbers only")
+            return -999999999
+    elif e in 'n!':
+        xreg = round(math.factorial(x1), precision)
+        endtransflag = True
+        return xreg
     elif e in 'x^2':
-        xregister = round(math.pow(xregister, 2), precision)
-        return xregister
+        xreg = round(math.pow(x1, 2), precision)
+        endtransflag = True
+        return xreg
 
 
 def npr(n, r):
@@ -279,20 +287,23 @@ def constant(e):
 
 def memory(e, x):
     global mregister
+    global endtransflag
 
     if e in 'MS':
         mregister = x
+        endtransflag = True
         return mregister
-    if e in 'M+':
+    elif e in 'M+':
         mregister += x
+        endtransflag = True
         return mregister
-    if e in 'M-':
+    elif e in 'M-':
         mregister -= x
+        endtransflag = True
         return mregister
-    if e in 'MR':
+    elif e in 'MR':
+        endtransflag = True
         return mregister
-
-    return e
 
 
 def clrstack(thestack):
@@ -343,7 +354,7 @@ def main():
     # ########################################
     # initialize main screen window
     sg.SetOptions(element_padding=(2, 2))
-    window = sg.Window('Python Calculator by Tom Imlay', background_color=darkaccent,
+    window = sg.Window('Python Calculator by Tom Imlay', background_color=lighteraccent,
                 default_element_size=(20, 1)).Layout(mainscreenlayout)
     window.Finalize()
     window.Refresh()
@@ -389,9 +400,10 @@ def main():
 
             elif event in ['+', '-', '*', '/', '%', '=', '+|-', 'x|y',  '1/x', 'x^y', 'Mod', 'nPr', 'nCr']:
                 xdisplay = operator(event, xregister, yregister)
+                # print('4. xdisplay, xregister, yregister', xdisplay, xregister, yregister)
                 update_display(window, xdisplay)
+
                 xregister = float(xdisplay)
-                # print('4. xdisplay', xdisplay)
 
             elif event in ['SIN', 'COS', 'TAN', 'SQRT', 'log', 'ln', 'n!', 'x^2']:
                 # print('e =>', event)
@@ -415,6 +427,8 @@ def main():
                 xdisplay = button(event, xdisplay)
                 update_display(window, xdisplay)
                 xregister = float(xdisplay)
+                themessage = 'Precision is ' + str(precision)
+                write_to_message_area(window, themessage )
 
             elif event in ['x^y']:
                 xregister = float(xdisplay)
