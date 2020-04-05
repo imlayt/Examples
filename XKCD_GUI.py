@@ -3,8 +3,8 @@ Written by: Shreyas Daniel - github.com/shreydan
 Written on: 26 April 2017
 Description: Download latest XKCD Comic with this program.
 NOTE:
-	if this script is launched from the cloned repo, a new folder is created.
-	Please move the file to another directory to avoid messing with the folder structure.
+    if this script is launched from the cloned repo, a new folder is created.
+    Please move the file to another directory to avoid messing with the folder structure.
 
 PySimpleGUI interface added by:Tom Imlay - github.com/imlayt
 Written on: 03/29/2020

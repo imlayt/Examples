@@ -1,7 +1,7 @@
 #
 # A calculator built with Python 3 and PySimpleGUI
 # by Tom Imlay
-#
+# Written on: 4/5/2020
 
 import PySimpleGUI as sg
 import sys
@@ -66,7 +66,7 @@ def operator(e, x, y):
 
     # print('e, x, y', e, x, y)
 
-    if e in 'xy':
+    if e in 'x|y':
         decimalflag = False
         tmpvar = x
         x = y
@@ -194,9 +194,8 @@ def calculate_result(operators, operands):
         return answer
 
 
-def function(e, x):
+def function(w, e, x):
     global xregister
-    global window
     global endtransflag
 
     if x == '':
@@ -230,11 +229,14 @@ def function(e, x):
             xregister = round(math.log(x1), precision)
             return xregister
         else:
-            write_to_message_area(window, "ERROR")
+            write_to_message_area(w, "ERROR")
             return -0
     elif e in 'n!':
         xregister = round(math.factorial(x1), precision)
         endtransflag = True
+        return xregister
+    elif e in 'x^2':
+        xregister = round(math.pow(xregister, 2), precision)
         return xregister
 
 
@@ -258,11 +260,11 @@ def npr(n, r):
         return n
 
 
-def ncr(n,r):
+def ncr(n, r):
     nval = int(n)
-    rval = int (r)
+    rval = int(r)
 
-    nprval = npr(n, r)
+    nprval = npr(nval, rval)
     c = int(nprval / math.factorial(rval))
     # print('nCr =>', c)
     return c
@@ -303,7 +305,7 @@ def cbtn(button_text):
             size=(5, 1), font=("Helvetica", 15), key=button_text)
 
 
-def update_display(window,displayvalue):
+def update_display(window, displayvalue):
     window.FindElement('_DISPLAY_').Update(displayvalue)
     window.Refresh()
 
@@ -314,11 +316,7 @@ def write_to_message_area(window, message):
 
 
 def main():
-    """
-        main-program
-        purpose: handles user input and prints
-                 information to the console.
-    """
+
     global xregister
     global yregister
     global decimalflag
@@ -330,32 +328,35 @@ def main():
     decimalflag = False
 
     # Define the mainscreen layout using the above layouts
-    mainscreenlayout = [[sg.Text('', size=(20, 1), key='_DISPLAY_',justification='right', font=("Helvetica", 20))],
-                        [cbtn(t) for t in ('xy', 'MS', 'M+', 'M-', 'MR')],
-                        [cbtn(t) for t in ('Pi', 'e', 'log', 'ln', '')],
-                        [cbtn(t) for t in ('SIN', 'COS', 'TAN', 'SQRT', '1/x')],
+    mainscreenlayout = [[sg.Text('', size=(20, 1), key='_DISPLAY_', justification='right', font=("Helvetica", 20))],
+                        [cbtn(t) for t in ('x|y', 'MS', 'M+', 'M-', 'MR')],
+                        [cbtn(t) for t in ('Pi', 'e', 'log', 'ln', '1/x')],
+                        [cbtn(t) for t in ('SIN', 'COS', 'TAN', 'SQRT', 'x^2')],
                         [cbtn(t) for t in ('n!', 'nCr', 'nPr', 'Del', 'Clr')],
                         [sg.Text('', size=(40, 1), key='_MESSAGEAREA_')],
                         [cbtn(t) for t in ('7', '8', '9', '*', '/')],
                         [cbtn(t) for t in ('4', '5', '6', '+', '-')],
                         [cbtn(t) for t in ('1', '2', '3', '%', 'x^y')],
-                        [cbtn(t) for t in ('0', '.', '+\-', '=', 'Prec')],
+                        [cbtn(t) for t in ('0', '.', '+|-', '=', '.#')],
                         [sg.Exit()]]
 
     # ########################################
     # initialize main screen window
     sg.SetOptions(element_padding=(2, 2))
-    window = sg.Window('Python Calculator', background_color=darkaccent,
+    window = sg.Window('Python Calculator by Tom Imlay', background_color=darkaccent,
                 default_element_size=(20, 1)).Layout(mainscreenlayout)
     window.Finalize()
     window.Refresh()
 
+    # Initialization Section
     xdisplay = '0'   # clear the input screen
     update_display(window, xdisplay)
     xregister = 0
     yregister = 0
+    themessage = 'Precision is ' + str(precision)
+    write_to_message_area(window, themessage)
 
-    # event loop
+    # main event loop
     while True:  # Event Loop
         event, values = window.Read()
         if event is None or event == "Exit":
@@ -379,49 +380,57 @@ def main():
                     # print('xdisplay, event', xdisplay, event)
                     xdisplay = str(xdisplay) + event
                     # print('2. xdisplay =>', xdisplay)
-                print('xdisplay =>', xdisplay)
+                # print('xdisplay =>', xdisplay)
                 xregister = float(xdisplay)
                 update_display(window, xdisplay)
                 xregister = float(xdisplay)
                 # print('xregister => ', xregister)
                 # print('yregister =>', yregister)
-            elif event in ['+', '-', '*', '/', '%', '=', '+\-', 'xy',  '1/x', 'x^y', 'Mod', 'nPr', 'nCr']:
+
+            elif event in ['+', '-', '*', '/', '%', '=', '+|-', 'x|y',  '1/x', 'x^y', 'Mod', 'nPr', 'nCr']:
                 xdisplay = operator(event, xregister, yregister)
                 update_display(window, xdisplay)
                 xregister = float(xdisplay)
                 # print('4. xdisplay', xdisplay)
-            elif event in ['SIN', 'COS', 'TAN', 'SQRT', 'log', 'ln', 'n!']:
+
+            elif event in ['SIN', 'COS', 'TAN', 'SQRT', 'log', 'ln', 'n!', 'x^2']:
                 # print('e =>', event)
                 xregister = float(xdisplay)
-                xdisplay = function(event, xregister)
+                xdisplay = function(window, event, xregister)
                 update_display(window, xdisplay)
                 xregister = float(xdisplay)
+
             elif event in ['Pi', 'e']:
                 xdisplay = constant(event)
                 xregister = float(xdisplay)
                 update_display(window, xdisplay)
                 xregister = float(xdisplay)
+
             elif event in ['MS', 'M+', 'M-', 'MR']:
                 xdisplay = memory(event, xregister)
                 update_display(window, xdisplay)
                 xregister = float(xdisplay)
+
             elif event in ['Del', 'Clr']:
                 xdisplay = button(event, xdisplay)
                 update_display(window, xdisplay)
                 xregister = float(xdisplay)
+
             elif event in ['x^y']:
                 xregister = float(xdisplay)
                 xdisplay = operator('x^y', xregister, yregister)
                 xdisplay = 0
                 update_display(window, xdisplay)
                 xregister = float(xdisplay)
-            elif event in ['Prec']:
+
+            elif event in ['.#']:
                 tmpstr = xdisplay
                 precision = int(tmpstr)
                 xdisplay = button('Clr', 0)
                 update_display(window, xdisplay)
                 xregister = float(xdisplay)
-
+                themessage = 'Precision is ' + str(precision)
+                write_to_message_area(window, themessage )
 
 if __name__ == '__main__':
     main()
