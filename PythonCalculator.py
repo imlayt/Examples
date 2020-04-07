@@ -306,19 +306,18 @@ def memory(e, x):
         return mregister
 
 
-def cbtn(button_text):
-    return sg.Button(button_text, button_color=(darkaccent, lightaccent),
-            size=(5, 1), font=("Helvetica", 15), key=button_text)
+def cbtn(btext):
+    return sg.Button(btext, button_color=(darkaccent, lightaccent), size=(5, 1), font=("Helvetica", 15), key=btext)
 
 
-def update_display(window, displayvalue):
-    window.FindElement('_DISPLAY_').Update(displayvalue)
-    window.Refresh()
+def update_display(w, displayvalue):
+    w.FindElement('_DISPLAY_').Update(displayvalue)
+    w.Refresh()
 
 
-def write_to_message_area(window, message):
-    window.FindElement('_MESSAGEAREA_').Update(message)
-    window.Refresh()
+def write_to_message_area(w, message):
+    w.FindElement('_MESSAGEAREA_').Update(message)
+    w.Refresh()
 
 
 def main():
